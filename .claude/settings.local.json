@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Read(//c/Users/aqafish/AppData/Roaming/**)",
+      "Read(//c/Program Files/**)",
+      "Read(//c/Users/aqafish/AppData/Local/Programs//**)",
+      "Bash(cmd.exe /c \"where node 2>&1 && node --version 2>&1 && npm --version 2>&1\")",
+      "Bash(cmd.exe /c \"where node\")",
+      "Bash(echo \"exit: $?\")",
+      "Bash(powershell.exe -Command \"node --version\")",
+      "Bash(powershell.exe -Command \"Get-Command node -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source\")",
+      "Bash(powershell.exe -Command \"python --version\")",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(echo $PATH)",
+      "Read(//usr/local/**)",
+      "Read(//usr/**)",
+      "Read(//c/Program Files \\(x86\\)/nodejs/**)",
+      "Read(//c/Users/aqafish/scoop/**)",
+      "Read(//c/Users/aqafish/**)",
+      "Bash(gh auth:*)",
+      "Bash(git --version)"
+    ]
+  }
+}

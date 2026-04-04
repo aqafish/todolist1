@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ToDoリスト</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Noto Sans JP', sans-serif;
+      background: #fafaf9;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 64px 16px;
+      color: #44403c;
+    }
+    .header { text-align: center; margin-bottom: 40px; }
+    .header h1 { font-size: 2.25rem; font-weight: 300; letter-spacing: 0.3em; color: #57534e; }
+    .header p { font-size: 0.8rem; color: #a8a29e; margin-top: 4px; letter-spacing: 0.1em; }
+
+    .card {
+      width: 100%; max-width: 512px;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      border: 1px solid #f5f5f4;
+      overflow: hidden;
+    }
+
+    /* Input row */
+    .input-row {
+      display: flex; align-items: center; gap: 12px;
+      padding: 16px 20px;
+      border-bottom: 1px solid #f5f5f4;
+    }
+    .input-row input {
+      flex: 1; border: none; outline: none;
+      font-family: inherit; font-size: 0.875rem;
+      color: #57534e; background: transparent;
+    }
+    .input-row input::placeholder { color: #d6d3d1; }
+    .add-btn {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: #1c1917; color: #fff; border: none;
+      font-size: 1.25rem; line-height: 1;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: background 0.15s;
+      flex-shrink: 0;
+    }
+    .add-btn:hover { background: #44403c; }
+    .add-btn:disabled { opacity: 0.25; cursor: not-allowed; }
+
+    /* Filter tabs */
+    .tabs { display: flex; border-bottom: 1px solid #f5f5f4; }
+    .tab {
+      flex: 1; padding: 10px 0;
+      background: none; border: none;
+      font-family: inherit; font-size: 0.75rem;
+      letter-spacing: 0.05em; cursor: pointer;
+      color: #a8a29e; transition: color 0.15s;
+      border-bottom: 2px solid transparent;
+    }
+    .tab:hover { color: #78716c; }
+    .tab.active {
+      color: #1c1917; font-weight: 500;
+      border-bottom: 2px solid #1c1917;
+    }
+
+    /* List */
+    .list { list-style: none; }
+    .empty {
+      padding: 48px 0; text-align: center;
+      font-size: 0.875rem; color: #d6d3d1;
+    }
+    .todo-item {
+      display: flex; align-items: center; gap: 16px;
+      padding: 16px 20px;
+      border-bottom: 1px solid #fafaf9;
+      transition: background 0.1s;
+    }
+    .todo-item:last-child { border-bottom: none; }
+    .todo-item:hover { background: #fafaf9; }
+    .todo-item:hover .del-btn { opacity: 1; }
+
+    .check-btn {
+      width: 20px; height: 20px; border-radius: 50%;
+      border: 2px solid #d6d3d1; background: none;
+      cursor: pointer; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.15s;
+    }
+    .check-btn:hover { border-color: #78716c; }
+    .check-btn.done { background: #34d399; border-color: #34d399; }
+    .check-btn svg { display: none; }
+    .check-btn.done svg { display: block; }
+
+    .todo-text {
+      flex: 1; font-size: 0.875rem; line-height: 1.6;
+      color: #57534e; transition: color 0.15s;
+    }
+    .todo-text.done { color: #d6d3d1; text-decoration: line-through; }
+
+    .del-btn {
+      width: 28px; height: 28px; border-radius: 50%;
+      border: none; background: none;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; opacity: 0.35;
+      color: #d6d3d1; transition: all 0.15s;
+    }
+    .del-btn:hover { color: #f87171; background: #fef2f2; opacity: 1; }
+
+    /* Footer */
+    .footer {
+      padding: 12px 20px;
+      border-top: 1px solid #fafaf9;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .footer-count { font-size: 0.75rem; color: #d6d3d1; }
+    .footer-count span { color: #78716c; font-weight: 500; }
+    .clear-btn {
+      font-size: 0.75rem; color: #d6d3d1;
+      background: none; border: none; cursor: pointer;
+      font-family: inherit; transition: color 0.15s;
+    }
+    .clear-btn:hover { color: #f87171; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>TODO</h1>
+    <p>やることを整理しよう</p>
+  </div>
+
+  <div class="card">
+    <div class="input-row">
+      <input id="inp" type="text" placeholder="タスクを入力..." autocomplete="off" />
+      <button class="add-btn" id="addBtn" aria-label="追加">+</button>
+    </div>
+    <div class="tabs">
+      <button class="tab active" data-filter="all">すべて</button>
+      <button class="tab" data-filter="active">未完了</button>
+      <button class="tab" data-filter="done">完了</button>
+    </div>
+    <ul class="list" id="list"></ul>
+    <div class="footer" id="footer" style="display:none">
+      <span class="footer-count">残り <span id="activeCount">0</span> 件</span>
+      <button class="clear-btn" id="clearBtn" style="display:none">完了済みを削除</button>
+    </div>
+  </div>
+
+  <script>
+    let todos = JSON.parse(localStorage.getItem('todos') || '[]');
+    let filter = 'all';
+
+    const inp = document.getElementById('inp');
+    const addBtn = document.getElementById('addBtn');
+    const listEl = document.getElementById('list');
+    const footer = document.getElementById('footer');
+    const activeCountEl = document.getElementById('activeCount');
+    const clearBtn = document.getElementById('clearBtn');
+
+    inp.addEventListener('keydown', e => { if (e.key === 'Enter') addTodo(); });
+    addBtn.addEventListener('click', addTodo);
+
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        filter = tab.dataset.filter;
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        render();
+      });
+    });
+
+    clearBtn.addEventListener('click', () => {
+      todos = todos.filter(t => !t.completed);
+      save(); render();
+    });
+
+    function addTodo() {
+      const text = inp.value.trim();
+      if (!text) return;
+      todos.unshift({ id: Date.now().toString(), text, completed: false });
+      inp.value = '';
+      save(); render();
+      inp.focus();
+    }
+
+    function toggleTodo(id) {
+      todos = todos.map(t => t.id === id ? { ...t, completed: !t.completed } : t);
+      save(); render();
+    }
+
+    function deleteTodo(id) {
+      todos = todos.filter(t => t.id !== id);
+      save(); render();
+    }
+
+    function save() {
+      localStorage.setItem('todos', JSON.stringify(todos));
+    }
+
+    function render() {
+      const filtered = todos.filter(t => {
+        if (filter === 'active') return !t.completed;
+        if (filter === 'done') return t.completed;
+        return true;
+      });
+
+      if (filtered.length === 0) {
+        listEl.innerHTML = `<li class="empty">${filter === 'done' ? '完了したタスクはありません' : 'タスクがありません'}</li>`;
+      } else {
+        listEl.innerHTML = filtered.map(t => `
+          <li class="todo-item">
+            <button class="check-btn ${t.completed ? 'done' : ''}" onclick="toggleTodo('${t.id}')" aria-label="完了切替">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                <path d="M2 6l3 3 5-5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+            <span class="todo-text ${t.completed ? 'done' : ''}">${escHtml(t.text)}</span>
+            <button class="del-btn" onclick="deleteTodo('${t.id}')" aria-label="削除">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </button>
+          </li>
+        `).join('');
+      }
+
+      const activeCount = todos.filter(t => !t.completed).length;
+      activeCountEl.textContent = activeCount;
+      footer.style.display = todos.length ? '' : 'none';
+      clearBtn.style.display = todos.some(t => t.completed) ? '' : 'none';
+    }
+
+    function escHtml(str) {
+      return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    render();
+  </script>
+</body>
+</html>

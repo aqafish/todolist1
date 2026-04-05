@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ケアプラン作成ツール</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #fafaf9;
+      --surface: #ffffff;
+      --border: #e7e5e4;
+      --border-light: #f5f5f4;
+      --text-primary: #1c1917;
+      --text-secondary: #57534e;
+      --text-muted: #a8a29e;
+      --text-faint: #d6d3d1;
+      --accent: #0ea5e9;
+      --accent-dark: #0284c7;
+      --accent-bg: #f0f9ff;
+      --green: #10b981;
+      --green-bg: #f0fdf4;
+      --amber: #f59e0b;
+      --amber-bg: #fffbeb;
+      --red: #ef4444;
+      --red-bg: #fef2f2;
+      --purple: #8b5cf6;
+      --purple-bg: #f5f3ff;
+      --shadow: 0 1px 3px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.04);
+      --shadow-md: 0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.04);
+    }
+    body {
+      font-family: 'Noto Sans JP', sans-serif;
+      background: var(--bg);
+      min-height: 100vh;
+      color: var(--text-primary);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    /* ── Top bar ── */
+    .topbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .topbar-left { display: flex; align-items: center; gap: 12px; }
+    .topbar-logo {
+      width: 32px; height: 32px; border-radius: 8px;
+      background: var(--accent); display: flex; align-items: center;
+      justify-content: center; color: white; font-weight: 700; font-size: 13px;
+    }
+    .topbar-title { font-size: 15px; font-weight: 500; color: var(--text-primary); }
+    .topbar-subtitle { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+    .topbar-right { display: flex; gap: 8px; }
+
+    /* ── Buttons ── */
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 7px 14px; border-radius: 8px; border: none;
+      font-family: inherit; font-size: 13px; font-weight: 500;
+      cursor: pointer; transition: all 0.15s; white-space: nowrap;
+    }
+    .btn-primary { background: var(--accent); color: white; }
+    .btn-primary:hover { background: var(--accent-dark); }
+    .btn-secondary {
+      background: var(--surface); color: var(--text-secondary);
+      border: 1px solid var(--border);
+    }
+    .btn-secondary:hover { background: var(--bg); }
+    .btn-ghost {
+      background: none; color: var(--text-secondary);
+      padding: 6px 10px;
+    }
+    .btn-ghost:hover { background: var(--bg); }
+    .btn-danger { background: var(--red-bg); color: var(--red); border: 1px solid #fecaca; }
+    .btn-danger:hover { background: #fee2e2; }
+    .btn-sm { padding: 4px 10px; font-size: 12px; border-radius: 6px; }
+    .btn-icon { padding: 6px; border-radius: 6px; }
+
+    /* ── Layout ── */
+    .main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 24px 16px 80px;
+    }
+
+    /* ── Tabs ── */
+    .tabs-row {
+      display: flex; gap: 2px;
+      background: var(--border-light);
+      border-radius: 10px; padding: 3px;
+      margin-bottom: 24px;
+      width: fit-content;
+    }
+    .tab-btn {
+      padding: 7px 18px; border-radius: 8px; border: none;
+      font-family: inherit; font-size: 13px; font-weight: 400;
+      cursor: pointer; background: none; color: var(--text-muted);
+      transition: all 0.15s;
+    }
+    .tab-btn:hover { color: var(--text-secondary); }
+    .tab-btn.active {
+      background: var(--surface); color: var(--text-primary);
+      font-weight: 500;
+      box-shadow: var(--shadow);
+    }
+
+    /* ── Cards ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      margin-bottom: 16px;
+    }
+    .card-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border-light);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .card-title {
+      font-size: 14px; font-weight: 600; color: var(--text-primary);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .card-body { padding: 20px; }
+
+    /* ── Section badge ── */
+    .badge {
+      display: inline-flex; align-items: center;
+      padding: 2px 8px; border-radius: 20px;
+      font-size: 11px; font-weight: 500;
+    }
+    .badge-blue { background: var(--accent-bg); color: var(--accent-dark); }
+    .badge-green { background: var(--green-bg); color: var(--green); }
+    .badge-amber { background: var(--amber-bg); color: var(--amber); }
+    .badge-purple { background: var(--purple-bg); color: var(--purple); }
+    .badge-gray { background: var(--border-light); color: var(--text-muted); }
+
+    /* ── Form ── */
+    .form-grid { display: grid; gap: 16px; }
+    .form-grid-2 { grid-template-columns: 1fr 1fr; }
+    .form-grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+    .form-grid-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-label {
+      font-size: 12px; font-weight: 500; color: var(--text-secondary);
+    }
+    .form-label .required {
+      color: var(--red); margin-left: 2px; font-size: 11px;
+    }
+    .form-control {
+      padding: 9px 12px; border-radius: 8px;
+      border: 1px solid var(--border);
+      font-family: inherit; font-size: 13px; color: var(--text-primary);
+      background: var(--surface);
+      transition: border-color 0.15s, box-shadow 0.15s;
+      width: 100%;
+    }
+    .form-control:focus {
+      outline: none; border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(14,165,233,0.1);
+    }
+    textarea.form-control {
+      resize: vertical; min-height: 80px; line-height: 1.6;
+    }
+    select.form-control { cursor: pointer; }
+
+    /* ── Divider ── */
+    .divider {
+      height: 1px; background: var(--border-light);
+      margin: 20px 0;
+    }
+
+    /* ── Care level indicator ── */
+    .care-levels {
+      display: flex; gap: 6px; flex-wrap: wrap;
+    }
+    .care-level-btn {
+      padding: 5px 12px; border-radius: 20px;
+      border: 1.5px solid var(--border);
+      background: none; font-family: inherit; font-size: 12px;
+      cursor: pointer; color: var(--text-muted);
+      transition: all 0.15s;
+    }
+    .care-level-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .care-level-btn.selected {
+      border-color: var(--accent); background: var(--accent-bg);
+      color: var(--accent-dark); font-weight: 500;
+    }
+
+    /* ── Needs list ── */
+    .needs-list { display: flex; flex-direction: column; gap: 12px; }
+    .need-card {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .need-header {
+      background: var(--bg);
+      padding: 12px 16px;
+      display: flex; align-items: center; gap: 10px;
+      border-bottom: 1px solid var(--border-light);
+    }
+    .need-number {
+      width: 24px; height: 24px; border-radius: 50%;
+      background: var(--accent); color: white;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700; flex-shrink: 0;
+    }
+    .need-title-input {
+      flex: 1; border: none; background: none;
+      font-family: inherit; font-size: 13px; font-weight: 500;
+      color: var(--text-primary);
+    }
+    .need-title-input:focus { outline: none; }
+    .need-title-input::placeholder { color: var(--text-faint); font-weight: 400; }
+    .need-body { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+
+    /* Goals row */
+    .goals-row {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+    }
+    .goal-box {
+      background: var(--bg); border-radius: 8px; padding: 12px;
+    }
+    .goal-label {
+      font-size: 11px; font-weight: 600; color: var(--text-muted);
+      letter-spacing: 0.05em; margin-bottom: 8px;
+      display: flex; align-items: center; gap: 4px;
+    }
+    .goal-label .dot {
+      width: 6px; height: 6px; border-radius: 50%;
+    }
+    .dot-green { background: var(--green); }
+    .dot-blue { background: var(--accent); }
+    .goal-input-row { display: flex; gap: 6px; margin-bottom: 6px; }
+    .goal-input {
+      flex: 1; padding: 6px 10px; border-radius: 6px;
+      border: 1px solid var(--border);
+      font-family: inherit; font-size: 12px; color: var(--text-primary);
+      background: var(--surface);
+    }
+    .goal-input:focus { outline: none; border-color: var(--accent); }
+    .goal-period {
+      width: 90px; padding: 6px 8px; border-radius: 6px;
+      border: 1px solid var(--border);
+      font-family: inherit; font-size: 11px; color: var(--text-secondary);
+      background: var(--surface);
+    }
+    .goal-period:focus { outline: none; border-color: var(--accent); }
+
+    /* Services */
+    .services-list { display: flex; flex-direction: column; gap: 6px; }
+    .service-row {
+      display: grid; grid-template-columns: 1.5fr 1fr 1fr 80px 80px 32px;
+      gap: 6px; align-items: center;
+    }
+    .service-input {
+      padding: 6px 10px; border-radius: 6px;
+      border: 1px solid var(--border);
+      font-family: inherit; font-size: 12px; color: var(--text-primary);
+      background: var(--surface); width: 100%;
+    }
+    .service-input:focus { outline: none; border-color: var(--accent); }
+    .service-header {
+      display: grid; grid-template-columns: 1.5fr 1fr 1fr 80px 80px 32px;
+      gap: 6px; padding: 0 0 4px;
+    }
+    .service-col-label {
+      font-size: 10px; font-weight: 500; color: var(--text-muted);
+      letter-spacing: 0.05em;
+    }
+    .icon-btn {
+      width: 28px; height: 28px; border-radius: 6px; border: none;
+      background: none; cursor: pointer; display: flex;
+      align-items: center; justify-content: center;
+      color: var(--text-faint); transition: all 0.15s;
+    }
+    .icon-btn:hover { background: var(--red-bg); color: var(--red); }
+
+    /* ── Summary tab ── */
+    .summary-table {
+      width: 100%; border-collapse: collapse;
+      font-size: 12px;
+    }
+    .summary-table th {
+      background: var(--bg); padding: 8px 12px;
+      text-align: left; font-size: 11px; font-weight: 600;
+      color: var(--text-muted); letter-spacing: 0.05em;
+      border-bottom: 1px solid var(--border);
+    }
+    .summary-table td {
+      padding: 10px 12px; border-bottom: 1px solid var(--border-light);
+      vertical-align: top;
+    }
+    .summary-table tr:last-child td { border-bottom: none; }
+    .summary-table tr:hover td { background: var(--bg); }
+
+    /* ── Profile header ── */
+    .profile-banner {
+      background: linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%);
+      border-radius: 12px; padding: 24px;
+      color: white; margin-bottom: 16px;
+      display: flex; align-items: center; gap: 20px;
+    }
+    .profile-avatar {
+      width: 56px; height: 56px; border-radius: 50%;
+      background: rgba(255,255,255,0.25);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; flex-shrink: 0;
+    }
+    .profile-info h2 { font-size: 20px; font-weight: 600; }
+    .profile-info p { font-size: 12px; opacity: 0.8; margin-top: 4px; }
+    .profile-tags { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+    .profile-tag {
+      background: rgba(255,255,255,0.2);
+      border-radius: 20px; padding: 2px 10px;
+      font-size: 11px; font-weight: 500;
+    }
+
+    /* ── Empty state ── */
+    .empty-state {
+      text-align: center; padding: 48px 20px;
+      color: var(--text-faint);
+    }
+    .empty-state svg { opacity: 0.4; margin-bottom: 12px; }
+    .empty-state p { font-size: 13px; }
+
+    /* ── Print ── */
+    @media print {
+      .topbar, .tabs-row, .btn, .icon-btn, .add-need-btn { display: none !important; }
+      .main { max-width: 100%; padding: 0; }
+      .card { box-shadow: none; border: 1px solid #ccc; break-inside: avoid; }
+      body { font-size: 11px; }
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 700px) {
+      .form-grid-2, .form-grid-3, .form-grid-4 { grid-template-columns: 1fr; }
+      .goals-row { grid-template-columns: 1fr; }
+      .service-row, .service-header { grid-template-columns: 1fr 1fr 32px; }
+      .service-row .service-input:nth-child(3),
+      .service-row .service-input:nth-child(4),
+      .service-row .service-input:nth-child(5) { display: none; }
+      .service-col-label:nth-child(3),
+      .service-col-label:nth-child(4),
+      .service-col-label:nth-child(5) { display: none; }
+    }
+
+    /* ── Animate ── */
+    .need-card { animation: slideIn 0.2s ease; }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(-6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Toast ── */
+    .toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+      background: #1c1917; color: white; padding: 10px 20px;
+      border-radius: 8px; font-size: 13px; z-index: 9999;
+      opacity: 0; transition: opacity 0.3s;
+      pointer-events: none;
+    }
+    .toast.show { opacity: 1; }
+
+    /* ── AI button ── */
+    .btn-ai {
+      background: linear-gradient(135deg, #8b5cf6, #6366f1);
+      color: white; border: none; font-size: 11px;
+      padding: 4px 10px; border-radius: 6px;
+      display: inline-flex; align-items: center; gap: 4px;
+      cursor: pointer; font-family: inherit; font-weight: 500;
+      transition: opacity 0.15s; white-space: nowrap;
+    }
+    .btn-ai:hover { opacity: 0.85; }
+    .btn-ai:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-ai.loading { animation: pulse 1s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.55} }
+
+    /* ── Modal ── */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.35);
+      z-index: 500; display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none; transition: opacity 0.2s;
+    }
+    .modal-overlay.open { opacity: 1; pointer-events: auto; }
+    .modal {
+      background: var(--surface); border-radius: 14px;
+      padding: 24px; width: 460px; max-width: 92vw;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+      transform: translateY(8px); transition: transform 0.2s;
+    }
+    .modal-overlay.open .modal { transform: translateY(0); }
+    .modal-title { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+    .modal-sub { font-size: 12px; color: var(--text-muted); margin-bottom: 18px; }
+    .modal-footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+    .api-key-tip {
+      margin-top: 8px; font-size: 11px; color: var(--text-muted);
+      background: var(--amber-bg); border-radius: 6px; padding: 8px 10px;
+      border-left: 3px solid var(--amber);
+    }
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="topbar-logo">CP</div>
+    <div>
+      <div class="topbar-title">ケアプラン作成ツール</div>
+      <div class="topbar-subtitle">居宅サービス計画書</div>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <button class="btn btn-secondary btn-sm" onclick="openApiModal()" title="Claude APIキーを設定">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 1a4 4 0 0 1 4 4c0 1.5-.82 2.8-2 3.46V10l-1 1-1-1V9.5a4 4 0 1 1 0-8.5zM6.5 4.5a1.5 1.5 0 1 0 3 0 1.5 1.5 0 0 0-3 0z" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M6 10.5l-3 3M5 11.5l1 1" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+      AI設定
+    </button>
+    <button class="btn btn-secondary btn-sm" onclick="clearAll()">リセット</button>
+    <button class="btn btn-secondary btn-sm" onclick="exportJSON()">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2 10v3h12v-3M8 2v8M5 7l3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      保存
+    </button>
+    <button class="btn btn-primary btn-sm" onclick="window.print()">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M4 5V2h8v3M4 11H2V7h12v4h-2M4 9h8v5H4z" stroke="white" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      印刷
+    </button>
+  </div>
+</div>
+
+<div class="main">
+
+  <div class="tabs-row">
+    <button class="tab-btn active" onclick="switchTab('basic', this)">利用者情報</button>
+    <button class="tab-btn" onclick="switchTab('needs', this)">ニーズ・目標</button>
+    <button class="tab-btn" onclick="switchTab('summary', this)">一覧確認</button>
+  </div>
+
+  <!-- ═══════════════════════════════ TAB: basic ═══════════════════════════════ -->
+  <div id="tab-basic">
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">
+          <svg width="16" height="16" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3.5" stroke="#0ea5e9" stroke-width="1.5"/><path d="M3 17c0-3.314 3.134-6 7-6s7 2.686 7 6" stroke="#0ea5e9" stroke-width="1.5" stroke-linecap="round"/></svg>
+          利用者基本情報
+        </span>
+        <span class="badge badge-blue">第1表</span>
+      </div>
+      <div class="card-body">
+        <div class="form-grid form-grid-3">
+          <div class="form-group" style="grid-column: span 2">
+            <label class="form-label">氏名<span class="required">*</span></label>
+            <input class="form-control" id="userName" type="text" placeholder="例）山田 花子" oninput="save()" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">ふりがな</label>
+            <input class="form-control" id="userNameKana" type="text" placeholder="やまだ はなこ" oninput="save()" />
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="form-grid form-grid-4">
+          <div class="form-group">
+            <label class="form-label">生年月日</label>
+            <input class="form-control" id="userBirth" type="date" oninput="save()" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">性別</label>
+            <select class="form-control" id="userGender" onchange="save()">
+              <option value="">選択</option>
+              <option>男性</option>
+              <option>女性</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">要介護度</label>
+            <select class="form-control" id="userCareLevel" onchange="save()">
+              <option value="">選択</option>
+              <option>要支援1</option>
+              <option>要支援2</option>
+              <option>要介護1</option>
+              <option>要介護2</option>
+              <option>要介護3</option>
+              <option>要介護4</option>
+              <option>要介護5</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">認定有効期間</label>
+            <input class="form-control" id="userCertPeriod" type="text" placeholder="例）R6.4〜R7.3" oninput="save()" />
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="form-grid form-grid-2">
+          <div class="form-group">
+            <label class="form-label">住所</label>
+            <input class="form-control" id="userAddress" type="text" placeholder="都道府県〜番地" oninput="save()" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">電話番号</label>
+            <input class="form-control" id="userPhone" type="tel" placeholder="000-0000-0000" oninput="save()" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">
+          <svg width="16" height="16" viewBox="0 0 20 20" fill="none"><path d="M3 4h14M3 10h9M3 16h6" stroke="#8b5cf6" stroke-width="1.5" stroke-linecap="round"/></svg>
+          生活状況・意向
+        </span>
+      </div>
+      <div class="card-body">
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">利用者の生活に対する意向・希望</label>
+            <textarea class="form-control" id="userWish" placeholder="利用者本人の言葉でご記入ください" oninput="save()"></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">家族・介護者の意向</label>
+            <textarea class="form-control" id="familyWish" placeholder="家族・介護者の希望" oninput="save()"></textarea>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div class="form-grid form-grid-2">
+          <div class="form-group">
+            <label class="form-label">総合的な援助方針</label>
+            <textarea class="form-control" id="aidPolicy" placeholder="援助の基本方針" oninput="save()"></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">緊急連絡先</label>
+            <textarea class="form-control" id="emergencyContact" placeholder="氏名・続柄・電話番号" style="min-height:60px" oninput="save()"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">
+          <svg width="16" height="16" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="2" stroke="#10b981" stroke-width="1.5"/><path d="M7 10h6M7 13h4" stroke="#10b981" stroke-width="1.5" stroke-linecap="round"/></svg>
+          担当ケアマネジャー
+        </span>
+      </div>
+      <div class="card-body">
+        <div class="form-grid form-grid-3">
+          <div class="form-group">
+            <label class="form-label">担当者氏名</label>
+            <input class="form-control" id="cmName" type="text" placeholder="氏名" oninput="save()" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">所属事業所</label>
+            <input class="form-control" id="cmOffice" type="text" placeholder="事業所名" oninput="save()" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">作成日</label>
+            <input class="form-control" id="planDate" type="date" oninput="save()" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /tab-basic -->
+
+  <!-- ═══════════════════════════════ TAB: needs ═══════════════════════════════ -->
+  <div id="tab-needs" style="display:none">
+
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
+      <div>
+        <div style="font-size:15px; font-weight:600; color:var(--text-primary)">ニーズ・目標・サービス内容</div>
+        <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">第2表 — 居宅サービス計画書</div>
+      </div>
+      <button class="btn btn-primary add-need-btn" onclick="addNeed()">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
+        ニーズを追加
+      </button>
+    </div>
+
+    <div class="needs-list" id="needsList"></div>
+
+    <div id="needsEmpty" class="card">
+      <div class="empty-state">
+        <svg width="48" height="48" viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="20" stroke="#d6d3d1" stroke-width="2"/><path d="M24 16v8M24 28v2" stroke="#d6d3d1" stroke-width="2.5" stroke-linecap="round"/></svg>
+        <p>「ニーズを追加」ボタンでケアプランの項目を作成できます</p>
+      </div>
+    </div>
+
+  </div><!-- /tab-needs -->
+
+  <!-- ═══════════════════════════════ TAB: summary ═══════════════════════════════ -->
+  <div id="tab-summary" style="display:none">
+
+    <div id="summaryContent"></div>
+
+  </div><!-- /tab-summary -->
+
+</div><!-- /main -->
+
+<div class="toast" id="toast"></div>
+
+<!-- API Key Modal -->
+<div class="modal-overlay" id="apiModal">
+  <div class="modal">
+    <div class="modal-title">Claude API キー設定</div>
+    <div class="modal-sub">長期・短期目標のAI自動生成に使用します</div>
+    <div class="form-group">
+      <label class="form-label">Anthropic APIキー</label>
+      <input class="form-control" id="apiKeyInput" type="password" placeholder="sk-ant-..." />
+      <div class="api-key-tip">APIキーはブラウザのlocalStorageにのみ保存されます。外部サーバーには送信されません。</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeApiModal()">キャンセル</button>
+      <button class="btn btn-primary" onclick="saveApiKey()">保存</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── State ──────────────────────────────────────────────────────────────────────
+let state = {
+  user: {},
+  needs: []
+};
+
+// ── Persistence ───────────────────────────────────────────────────────────────
+function save() {
+  collectForm();
+  localStorage.setItem('careplan_v1', JSON.stringify(state));
+}
+
+function load() {
+  const raw = localStorage.getItem('careplan_v1');
+  if (!raw) return;
+  try {
+    state = JSON.parse(raw);
+    applyForm();
+    renderNeeds();
+  } catch(e) {}
+}
+
+function collectForm() {
+  const ids = ['userName','userNameKana','userBirth','userGender','userCareLevel',
+    'userCertPeriod','userAddress','userPhone','userWish','familyWish',
+    'aidPolicy','emergencyContact','cmName','cmOffice','planDate'];
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) state.user[id] = el.value;
+  });
+}
+
+function applyForm() {
+  Object.entries(state.user).forEach(([id, val]) => {
+    const el = document.getElementById(id);
+    if (el) el.value = val || '';
+  });
+}
+
+// ── Tabs ──────────────────────────────────────────────────────────────────────
+function switchTab(name, btn) {
+  ['basic','needs','summary'].forEach(t => {
+    document.getElementById('tab-' + t).style.display = t === name ? '' : 'none';
+  });
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  if (name === 'summary') renderSummary();
+  if (name === 'needs') renderNeeds();
+  save();
+}
+
+// ── Needs ─────────────────────────────────────────────────────────────────────
+function addNeed() {
+  state.needs.push({
+    id: Date.now().toString(),
+    title: '',
+    longGoal: '',
+    longPeriod: '',
+    shortGoal: '',
+    shortPeriod: '',
+    services: [newService()]
+  });
+  save();
+  renderNeeds();
+}
+
+function newService() {
+  return { id: Date.now().toString() + Math.random(), content: '', type: '', provider: '', freq: '', period: '' };
+}
+
+function removeNeed(id) {
+  state.needs = state.needs.filter(n => n.id !== id);
+  save();
+  renderNeeds();
+}
+
+function addService(needId) {
+  const need = state.needs.find(n => n.id === needId);
+  if (!need) return;
+  need.services.push(newService());
+  save();
+  renderNeeds();
+}
+
+function removeService(needId, svcId) {
+  const need = state.needs.find(n => n.id === needId);
+  if (!need) return;
+  need.services = need.services.filter(s => s.id !== svcId);
+  save();
+  renderNeeds();
+}
+
+function updateNeed(id, field, value) {
+  const need = state.needs.find(n => n.id === id);
+  if (need) { need[field] = value; save(); }
+}
+
+function updateService(needId, svcId, field, value) {
+  const need = state.needs.find(n => n.id === needId);
+  if (!need) return;
+  const svc = need.services.find(s => s.id === svcId);
+  if (svc) { svc[field] = value; save(); }
+}
+
+function renderNeeds() {
+  const list = document.getElementById('needsList');
+  const empty = document.getElementById('needsEmpty');
+  if (!state.needs.length) {
+    list.innerHTML = '';
+    empty.style.display = '';
+    return;
+  }
+  empty.style.display = 'none';
+
+  list.innerHTML = state.needs.map((need, idx) => `
+    <div class="need-card" id="need-${need.id}">
+      <div class="need-header">
+        <div class="need-number">${idx + 1}</div>
+        <input
+          class="need-title-input"
+          placeholder="生活全般の解決すべき課題（ニーズ）を入力..."
+          value="${escHtml(need.title)}"
+          onchange="updateNeed('${need.id}', 'title', this.value)"
+        />
+        <button class="btn btn-ghost btn-sm" style="color:var(--text-faint)" onclick="removeNeed('${need.id}')" title="削除">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <div class="need-body">
+
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+          <span style="font-size:11px; font-weight:600; color:var(--text-muted); letter-spacing:0.05em;">目標</span>
+          <button class="btn-ai" id="ai-btn-${need.id}" onclick="generateGoals('${need.id}')">
+            <svg width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M8 1l1.8 4.2L14 7l-4.2 1.8L8 13l-1.8-4.2L2 7l4.2-1.8z" fill="white"/></svg>
+            AI生成
+          </button>
+        </div>
+        <div class="goals-row">
+          <div class="goal-box">
+            <div class="goal-label"><span class="dot dot-green"></span>長期目標</div>
+            <div class="goal-input-row">
+              <input class="goal-input" id="longGoal-${need.id}" placeholder="目標を入力"
+                value="${escHtml(need.longGoal)}"
+                onchange="updateNeed('${need.id}', 'longGoal', this.value)" />
+              <input class="goal-period" placeholder="期間"
+                value="${escHtml(need.longPeriod)}"
+                onchange="updateNeed('${need.id}', 'longPeriod', this.value)" />
+            </div>
+          </div>
+          <div class="goal-box">
+            <div class="goal-label"><span class="dot dot-blue"></span>短期目標</div>
+            <div class="goal-input-row">
+              <input class="goal-input" id="shortGoal-${need.id}" placeholder="目標を入力"
+                value="${escHtml(need.shortGoal)}"
+                onchange="updateNeed('${need.id}', 'shortGoal', this.value)" />
+              <input class="goal-period" placeholder="期間"
+                value="${escHtml(need.shortPeriod)}"
+                onchange="updateNeed('${need.id}', 'shortPeriod', this.value)" />
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="service-header">
+            <span class="service-col-label">サービス内容</span>
+            <span class="service-col-label">サービス種別</span>
+            <span class="service-col-label">担当者・事業所</span>
+            <span class="service-col-label">頻度</span>
+            <span class="service-col-label">期間</span>
+            <span></span>
+          </div>
+          <div class="services-list">
+            ${need.services.map(svc => `
+              <div class="service-row">
+                <input class="service-input" placeholder="サービスの内容"
+                  value="${escHtml(svc.content)}"
+                  onchange="updateService('${need.id}','${svc.id}','content',this.value)" />
+                <input class="service-input" placeholder="訪問介護など"
+                  value="${escHtml(svc.type)}"
+                  onchange="updateService('${need.id}','${svc.id}','type',this.value)" />
+                <input class="service-input" placeholder="事業所名"
+                  value="${escHtml(svc.provider)}"
+                  onchange="updateService('${need.id}','${svc.id}','provider',this.value)" />
+                <input class="service-input" placeholder="週2回"
+                  value="${escHtml(svc.freq)}"
+                  onchange="updateService('${need.id}','${svc.id}','freq',this.value)" />
+                <input class="service-input" placeholder="R6.4〜"
+                  value="${escHtml(svc.period)}"
+                  onchange="updateService('${need.id}','${svc.id}','period',this.value)" />
+                <button class="icon-btn" onclick="removeService('${need.id}','${svc.id}')" title="行を削除">
+                  <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                </button>
+              </div>
+            `).join('')}
+          </div>
+          <button class="btn btn-ghost btn-sm" style="margin-top:6px; color:var(--accent)" onclick="addService('${need.id}')">
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            サービスを追加
+          </button>
+        </div>
+
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── Summary ───────────────────────────────────────────────────────────────────
+function renderSummary() {
+  collectForm();
+  const u = state.user;
+  const name = u.userName || '（未入力）';
+  const kana = u.userNameKana ? `（${u.userNameKana}）` : '';
+  const birth = u.userBirth ? formatDate(u.userBirth) : '―';
+  const age = u.userBirth ? calcAge(u.userBirth) + '歳' : '';
+  const el = document.getElementById('summaryContent');
+
+  el.innerHTML = `
+    <div class="profile-banner">
+      <div class="profile-avatar">👤</div>
+      <div class="profile-info">
+        <h2>${escHtml(name)} ${escHtml(kana)}</h2>
+        <p>${birth}${age ? ' · ' + age : ''}${u.userGender ? ' · ' + u.userGender : ''}</p>
+        <div class="profile-tags">
+          ${u.userCareLevel ? `<span class="profile-tag">${u.userCareLevel}</span>` : ''}
+          ${u.userCertPeriod ? `<span class="profile-tag">認定期間：${escHtml(u.userCertPeriod)}</span>` : ''}
+          ${u.cmName ? `<span class="profile-tag">CM：${escHtml(u.cmName)}</span>` : ''}
+        </div>
+      </div>
+    </div>
+
+    ${u.userWish || u.aidPolicy ? `
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-header">
+        <span class="card-title">意向・援助方針</span>
+      </div>
+      <div class="card-body">
+        ${u.userWish ? `<div style="margin-bottom:12px"><div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;font-weight:600">利用者の意向</div><div style="font-size:13px;color:var(--text-secondary)">${escHtml(u.userWish)}</div></div>` : ''}
+        ${u.aidPolicy ? `<div><div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;font-weight:600">援助方針</div><div style="font-size:13px;color:var(--text-secondary)">${escHtml(u.aidPolicy)}</div></div>` : ''}
+      </div>
+    </div>
+    ` : ''}
+
+    ${state.needs.length ? `
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">ニーズ・目標・サービス一覧</span>
+        <span class="badge badge-blue">${state.needs.length} 件</span>
+      </div>
+      <table class="summary-table">
+        <thead>
+          <tr>
+            <th style="width:30px">#</th>
+            <th>課題（ニーズ）</th>
+            <th>長期目標</th>
+            <th>短期目標</th>
+            <th>サービス内容</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${state.needs.map((need, idx) => `
+            <tr>
+              <td style="text-align:center;color:var(--text-muted);font-size:11px">${idx+1}</td>
+              <td><strong>${escHtml(need.title) || '<span style="color:var(--text-faint)">未入力</span>'}</strong></td>
+              <td>
+                ${need.longGoal ? escHtml(need.longGoal) : '―'}
+                ${need.longPeriod ? `<div style="font-size:10px;color:var(--text-muted);margin-top:2px">${escHtml(need.longPeriod)}</div>` : ''}
+              </td>
+              <td>
+                ${need.shortGoal ? escHtml(need.shortGoal) : '―'}
+                ${need.shortPeriod ? `<div style="font-size:10px;color:var(--text-muted);margin-top:2px">${escHtml(need.shortPeriod)}</div>` : ''}
+              </td>
+              <td>
+                ${need.services.filter(s => s.content).map(s => `
+                  <div style="margin-bottom:6px;padding-bottom:6px;border-bottom:1px solid var(--border-light)">
+                    <div style="font-size:12px">${escHtml(s.content)}</div>
+                    <div style="font-size:10px;color:var(--text-muted);margin-top:2px">
+                      ${s.type ? escHtml(s.type) : ''}
+                      ${s.provider ? ' · ' + escHtml(s.provider) : ''}
+                      ${s.freq ? ' · ' + escHtml(s.freq) : ''}
+                    </div>
+                  </div>
+                `).join('') || '<span style="color:var(--text-faint);font-size:11px">未入力</span>'}
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+    ` : `
+    <div class="card">
+      <div class="empty-state">
+        <p>「ニーズ・目標」タブからケアプランの内容を入力してください</p>
+      </div>
+    </div>
+    `}
+  `;
+}
+
+// ── Utils ──────────────────────────────────────────────────────────────────────
+function escHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function formatDate(d) {
+  if (!d) return '';
+  const [y, m, day] = d.split('-');
+  return `${y}年${parseInt(m)}月${parseInt(day)}日`;
+}
+
+function calcAge(birth) {
+  const b = new Date(birth), t = new Date();
+  let age = t.getFullYear() - b.getFullYear();
+  if (t.getMonth() < b.getMonth() || (t.getMonth() === b.getMonth() && t.getDate() < b.getDate())) age--;
+  return age;
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+function clearAll() {
+  if (!confirm('すべてのデータをリセットしますか？')) return;
+  localStorage.removeItem('careplan_v1');
+  state = { user: {}, needs: [] };
+  applyForm();
+  renderNeeds();
+  showToast('リセットしました');
+}
+
+function exportJSON() {
+  collectForm();
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  const name = state.user.userName || 'careplan';
+  a.download = `ケアプラン_${name}_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  showToast('保存しました');
+}
+
+// ── API Key Modal ─────────────────────────────────────────────────────────────
+function openApiModal() {
+  const key = localStorage.getItem('careplan_apikey') || '';
+  document.getElementById('apiKeyInput').value = key;
+  document.getElementById('apiModal').classList.add('open');
+}
+
+function closeApiModal() {
+  document.getElementById('apiModal').classList.remove('open');
+}
+
+function saveApiKey() {
+  const key = document.getElementById('apiKeyInput').value.trim();
+  if (key) localStorage.setItem('careplan_apikey', key);
+  else localStorage.removeItem('careplan_apikey');
+  closeApiModal();
+  showToast('APIキーを保存しました');
+}
+
+document.getElementById('apiModal').addEventListener('click', function(e) {
+  if (e.target === this) closeApiModal();
+});
+
+// ── AI Goal Generation ────────────────────────────────────────────────────────
+async function generateGoals(needId) {
+  const apiKey = localStorage.getItem('careplan_apikey');
+  if (!apiKey) {
+    openApiModal();
+    showToast('APIキーを設定してください');
+    return;
+  }
+
+  const need = state.needs.find(n => n.id === needId);
+  if (!need || !need.title.trim()) {
+    showToast('ニーズ（課題）を入力してから生成してください');
+    return;
+  }
+
+  const btn = document.getElementById('ai-btn-' + needId);
+  if (btn) { btn.disabled = true; btn.classList.add('loading'); btn.textContent = '生成中...'; }
+
+  collectForm();
+  const u = state.user;
+  const context = [
+    u.userCareLevel ? `要介護度：${u.userCareLevel}` : '',
+    u.userBirth ? `年齢：${calcAge(u.userBirth)}歳` : '',
+    u.userGender ? `性別：${u.userGender}` : '',
+    u.userWish ? `利用者の意向：${u.userWish}` : '',
+    u.aidPolicy ? `援助方針：${u.aidPolicy}` : '',
+  ].filter(Boolean).join('\n');
+
+  const prompt = `あなたは介護支援専門員（ケアマネジャー）のアシスタントです。
+以下の利用者情報とニーズをもとに、ケアプラン（居宅サービス計画書）の長期目標と短期目標を日本語で提案してください。
+
+【利用者情報】
+${context || '（情報なし）'}
+
+【ニーズ（課題）】
+${need.title}
+
+以下のJSON形式のみで回答してください。説明文は不要です。
+{"longGoal": "長期目標の文章", "shortGoal": "短期目標の文章"}`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 300,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error?.message || `HTTP ${res.status}`);
+    }
+
+    const data = await res.json();
+    const text = data.content?.[0]?.text || '';
+    const match = text.match(/\{[\s\S]*\}/);
+    if (!match) throw new Error('レスポンスの解析に失敗しました');
+
+    const goals = JSON.parse(match[0]);
+
+    need.longGoal = goals.longGoal || need.longGoal;
+    need.shortGoal = goals.shortGoal || need.shortGoal;
+    save();
+
+    const lgEl = document.getElementById('longGoal-' + needId);
+    const sgEl = document.getElementById('shortGoal-' + needId);
+    if (lgEl) { lgEl.value = need.longGoal; lgEl.style.borderColor = 'var(--purple)'; setTimeout(() => lgEl.style.borderColor = '', 1500); }
+    if (sgEl) { sgEl.value = need.shortGoal; sgEl.style.borderColor = 'var(--purple)'; setTimeout(() => sgEl.style.borderColor = '', 1500); }
+
+    showToast('目標を生成しました');
+  } catch(e) {
+    showToast('エラー：' + e.message);
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.classList.remove('loading');
+      btn.innerHTML = '<svg width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M8 1l1.8 4.2L14 7l-4.2 1.8L8 13l-1.8-4.2L2 7l4.2-1.8z" fill="white"/></svg> AI生成';
+    }
+  }
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+load();
+</script>
+</body>
+</html>

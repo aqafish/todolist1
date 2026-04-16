@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>選挙ポスター - 太田寛朗</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap');
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background: #1a1a2e;
+      font-family: 'Noto Sans JP', sans-serif;
+    }
+
+    .poster {
+      width: 400px;
+      min-height: 570px;
+      background: linear-gradient(160deg, #1565c0 0%, #0d47a1 40%, #1976d2 70%, #42a5f5 100%);
+      border-radius: 8px;
+      overflow: hidden;
+      position: relative;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+    }
+
+    /* 星のキラキラ効果 */
+    .stars {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .star {
+      position: absolute;
+      background: white;
+      border-radius: 50%;
+      animation: twinkle 2s infinite alternate;
+    }
+
+    @keyframes twinkle {
+      0% { opacity: 0.3; transform: scale(1); }
+      100% { opacity: 1; transform: scale(1.5); }
+    }
+
+    /* ゴールドの上部帯 */
+    .gold-bar-top {
+      height: 6px;
+      background: linear-gradient(90deg, #b8860b, #ffd700, #ffec6e, #ffd700, #b8860b);
+      position: relative;
+      z-index: 2;
+    }
+
+    /* メインタイトル */
+    .main-title {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      padding: 18px 20px 10px;
+    }
+
+    .main-title .line1 {
+      font-size: 26px;
+      font-weight: 900;
+      color: #ffec6e;
+      text-shadow:
+        2px 2px 0 #8b6914,
+        -1px -1px 0 #8b6914,
+        1px -1px 0 #8b6914,
+        -1px 1px 0 #8b6914,
+        0 3px 6px rgba(0,0,0,0.5);
+      letter-spacing: 1px;
+      line-height: 1.2;
+    }
+
+    .main-title .line2 {
+      font-size: 34px;
+      font-weight: 900;
+      color: #ff3030;
+      text-shadow:
+        2px 2px 0 #7a0000,
+        -1px -1px 0 #7a0000,
+        1px -1px 0 #7a0000,
+        -1px 1px 0 #7a0000,
+        0 3px 8px rgba(0,0,0,0.6);
+      letter-spacing: 2px;
+      margin-top: 2px;
+    }
+
+    /* コンテンツエリア */
+    .content-area {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      padding: 0 15px 10px;
+      gap: 10px;
+    }
+
+    /* 候補者写真プレースホルダー */
+    .candidate-photo {
+      width: 140px;
+      min-height: 180px;
+      background: linear-gradient(180deg, #ccc 0%, #aaa 100%);
+      border-radius: 6px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #666;
+      font-size: 13px;
+      text-align: center;
+      border: 2px solid rgba(255,255,255,0.3);
+      overflow: hidden;
+    }
+
+    .candidate-photo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* 右側のテキストエリア */
+    .right-content {
+      flex: 1;
+    }
+
+    .subtitle-box {
+      background: linear-gradient(90deg, rgba(255,255,255,0.15), rgba(255,255,255,0.05));
+      border-left: 4px solid #ffd700;
+      padding: 8px 10px;
+      margin-bottom: 12px;
+      border-radius: 0 6px 6px 0;
+    }
+
+    .subtitle-box p {
+      color: #fff;
+      font-size: 14px;
+      font-weight: 700;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+      line-height: 1.5;
+    }
+
+    /* チェックリスト */
+    .checklist {
+      list-style: none;
+    }
+
+    .checklist li {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      margin-bottom: 10px;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 700;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+      line-height: 1.5;
+    }
+
+    .check-icon {
+      width: 22px;
+      height: 22px;
+      background: linear-gradient(135deg, #ff6b6b, #cc0000);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+
+    .check-icon::after {
+      content: '✓';
+      color: white;
+      font-size: 14px;
+      font-weight: 900;
+    }
+
+    /* イラストエリア */
+    .illustration-area {
+      position: relative;
+      z-index: 2;
+      margin: 0 15px 10px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 10px;
+      padding: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100px;
+    }
+
+    .illustration-placeholder {
+      text-align: center;
+      color: rgba(255,255,255,0.8);
+      font-size: 13px;
+    }
+
+    /* イラスト（SVG） */
+    .illustration-svg {
+      width: 100%;
+      max-width: 220px;
+    }
+
+    /* 下部ゴールド帯 - 候補者名 */
+    .candidate-bar {
+      position: relative;
+      z-index: 2;
+      background: linear-gradient(90deg, #8b6914, #d4a017, #ffd700, #d4a017, #8b6914);
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .candidate-name-area {
+      flex: 1;
+    }
+
+    .candidate-name {
+      font-size: 36px;
+      font-weight: 900;
+      color: #fff;
+      text-shadow:
+        2px 2px 0 #5a4000,
+        -1px -1px 0 #5a4000,
+        1px -1px 0 #5a4000,
+        -1px 1px 0 #5a4000;
+      letter-spacing: 3px;
+      line-height: 1;
+    }
+
+    .candidate-sub {
+      font-size: 11px;
+      color: #fff;
+      font-weight: 700;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.4);
+      margin-top: 4px;
+    }
+
+    /* タグライン */
+    .tagline-box {
+      background: linear-gradient(135deg, #1565c0, #0d47a1);
+      border: 3px solid #ffd700;
+      border-radius: 8px;
+      padding: 8px 12px;
+      text-align: center;
+      position: relative;
+    }
+
+    .tagline-box::before,
+    .tagline-box::after {
+      content: '🏆';
+      position: absolute;
+      top: -8px;
+      font-size: 16px;
+    }
+
+    .tagline-box::before { left: -4px; }
+    .tagline-box::after { right: -4px; }
+
+    .tagline {
+      color: #ffd700;
+      font-size: 13px;
+      font-weight: 900;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+      line-height: 1.4;
+    }
+
+    /* フッター */
+    .footer {
+      position: relative;
+      z-index: 2;
+      background: rgba(0,0,0,0.3);
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 12px;
+    }
+
+    .policy-text {
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .line-button {
+      background: #06c755;
+      color: white;
+      padding: 6px 16px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    }
+
+    .qr-placeholder {
+      width: 50px;
+      height: 50px;
+      background: white;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 8px;
+      color: #333;
+      text-align: center;
+      padding: 4px;
+    }
+
+    /* ゴールドの下部帯 */
+    .gold-bar-bottom {
+      height: 6px;
+      background: linear-gradient(90deg, #b8860b, #ffd700, #ffec6e, #ffd700, #b8860b);
+      position: relative;
+      z-index: 2;
+    }
+  </style>
+</head>
+<body>
+  <div class="poster">
+
+    <!-- キラキラ星 -->
+    <div class="stars" id="stars"></div>
+
+    <!-- 上部ゴールド帯 -->
+    <div class="gold-bar-top"></div>
+
+    <!-- メインタイトル -->
+    <div class="main-title">
+      <div class="line1">ケアマネの資質向上へ</div>
+      <div class="line2">全力で取り組みます！</div>
+    </div>
+
+    <!-- コンテンツエリア -->
+    <div class="content-area">
+      <!-- 候補者写真 -->
+      <div class="candidate-photo">
+        <span>候補者写真<br>をここに配置</span>
+      </div>
+
+      <!-- 右テキスト -->
+      <div class="right-content">
+        <div class="subtitle-box">
+          <p>ケアマネジャーの待遇向上・<br>職場環境改善を実現！</p>
+        </div>
+        <ul class="checklist">
+          <li>
+            <span class="check-icon"></span>
+            <span>ケアマネの給料アップ、さらなる処遇改善</span>
+          </li>
+          <li>
+            <span class="check-icon"></span>
+            <span>ケアマネ研修の充実・質の向上</span>
+          </li>
+          <li>
+            <span class="check-icon"></span>
+            <span>安心して働き続けられる介護環境の整備</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- イラストエリア -->
+    <div class="illustration-area">
+      <svg class="illustration-svg" viewBox="0 0 220 110" xmlns="http://www.w3.org/2000/svg">
+        <!-- 背景 -->
+        <rect width="220" height="110" rx="8" fill="rgba(255,255,255,0.15)"/>
+
+        <!-- テーブル -->
+        <rect x="30" y="75" width="160" height="8" rx="4" fill="#8b6914"/>
+        <rect x="40" y="83" width="8" height="20" rx="2" fill="#6b4f10"/>
+        <rect x="172" y="83" width="8" height="20" rx="2" fill="#6b4f10"/>
+
+        <!-- 書類 -->
+        <rect x="60" y="60" width="50" height="18" rx="2" fill="white" opacity="0.9"/>
+        <line x1="65" y1="65" x2="105" y2="65" stroke="#aaa" stroke-width="1.5"/>
+        <line x1="65" y1="70" x2="100" y2="70" stroke="#aaa" stroke-width="1.5"/>
+        <line x1="65" y1="75" x2="95" y2="75" stroke="#aaa" stroke-width="1.5"/>
+
+        <!-- クリップボード -->
+        <rect x="115" y="45" width="35" height="28" rx="2" fill="white" opacity="0.9"/>
+        <rect x="125" y="41" width="15" height="6" rx="3" fill="#aaa"/>
+        <line x1="120" y1="55" x2="145" y2="55" stroke="#aaa" stroke-width="1"/>
+        <line x1="120" y1="60" x2="145" y2="60" stroke="#aaa" stroke-width="1"/>
+        <line x1="120" y1="65" x2="138" y2="65" stroke="#aaa" stroke-width="1"/>
+
+        <!-- おばあさん（左） -->
+        <circle cx="55" cy="30" r="14" fill="#f4c89e"/>
+        <path d="M45 25 Q55 18 65 25" fill="#888" stroke="none"/>
+        <rect x="42" y="44" width="26" height="22" rx="4" fill="#7cb87c"/>
+        <line x1="42" y1="50" x2="35" y2="65" stroke="#7cb87c" stroke-width="6" stroke-linecap="round"/>
+        <line x1="68" y1="50" x2="75" y2="62" stroke="#7cb87c" stroke-width="6" stroke-linecap="round"/>
+        <line x1="48" y1="66" x2="48" y2="82" stroke="#555" stroke-width="5" stroke-linecap="round"/>
+        <line x1="60" y1="66" x2="60" y2="82" stroke="#555" stroke-width="5" stroke-linecap="round"/>
+        <!-- 笑顔 -->
+        <path d="M50 33 Q55 38 60 33" stroke="#c0856e" stroke-width="1.5" fill="none"/>
+        <circle cx="51" cy="29" r="1.5" fill="#666"/>
+        <circle cx="59" cy="29" r="1.5" fill="#666"/>
+
+        <!-- おじいさん（中） -->
+        <circle cx="110" cy="28" r="14" fill="#f4c89e"/>
+        <path d="M100 22 Q110 16 120 22" fill="#ddd" stroke="none"/>
+        <rect x="97" y="42" width="26" height="22" rx="4" fill="#b07060"/>
+        <line x1="97" y1="48" x2="90" y2="60" stroke="#b07060" stroke-width="6" stroke-linecap="round"/>
+        <line x1="123" y1="48" x2="130" y2="60" stroke="#b07060" stroke-width="6" stroke-linecap="round"/>
+        <line x1="103" y1="64" x2="103" y2="80" stroke="#555" stroke-width="5" stroke-linecap="round"/>
+        <line x1="115" y1="64" x2="115" y2="80" stroke="#555" stroke-width="5" stroke-linecap="round"/>
+        <!-- 笑顔 -->
+        <path d="M105 31 Q110 36 115 31" stroke="#c0856e" stroke-width="1.5" fill="none"/>
+        <circle cx="106" cy="27" r="1.5" fill="#666"/>
+        <circle cx="114" cy="27" r="1.5" fill="#666"/>
+
+        <!-- 介護士（右） -->
+        <circle cx="170" cy="27" r="14" fill="#f4c89e"/>
+        <path d="M160 22 Q170 16 180 22" fill="#5a3e28" stroke="none"/>
+        <rect x="157" y="41" width="26" height="22" rx="4" fill="#f0b0c0"/>
+        <!-- エプロン/制服 -->
+        <rect x="162" y="41" width="16" height="22" rx="2" fill="white" opacity="0.5"/>
+        <line x1="157" y1="47" x2="150" y2="60" stroke="#f0b0c0" stroke-width="6" stroke-linecap="round"/>
+        <line x1="183" y1="47" x2="190" y2="60" stroke="#f0b0c0" stroke-width="6" stroke-linecap="round"/>
+        <line x1="163" y1="63" x2="163" y2="80" stroke="#555" stroke-width="5" stroke-linecap="round"/>
+        <line x1="175" y1="63" x2="175" y2="80" stroke="#555" stroke-width="5" stroke-linecap="round"/>
+        <!-- 笑顔 -->
+        <path d="M165 30 Q170 35 175 30" stroke="#c0856e" stroke-width="1.5" fill="none"/>
+        <circle cx="166" cy="26" r="1.5" fill="#666"/>
+        <circle cx="174" cy="26" r="1.5" fill="#666"/>
+
+        <!-- 植物 -->
+        <rect x="8" y="65" width="6" height="15" rx="2" fill="#6b4f10"/>
+        <circle cx="11" cy="58" r="9" fill="#4caf50"/>
+        <circle cx="6" cy="63" r="6" fill="#388e3c"/>
+        <circle cx="16" cy="62" r="6" fill="#388e3c"/>
+      </svg>
+    </div>
+
+    <!-- 候補者名帯 -->
+    <div class="candidate-bar">
+      <div class="candidate-name-area">
+        <div class="candidate-name">太田寛朗</div>
+        <div class="candidate-sub">ケアマネージャー出身の○党候補</div>
+      </div>
+      <div class="tagline-box">
+        <div class="tagline">現場出身だから<br>本物の改革ができる。</div>
+      </div>
+    </div>
+
+    <!-- フッター -->
+    <div class="footer">
+      <span class="policy-text">政策を詳しく</span>
+      <div class="line-button">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <rect width="18" height="18" rx="4" fill="white"/>
+          <path d="M9 3C5.69 3 3 5.36 3 8.27C3 10.88 5.18 13.07 8.12 13.46L9 15L9.88 13.46C12.82 13.07 15 10.88 15 8.27C15 5.36 12.31 3 9 3Z" fill="#06c755"/>
+        </svg>
+        LINE
+      </div>
+      <div class="qr-placeholder">
+        QR<br>CODE
+      </div>
+    </div>
+
+    <!-- 下部ゴールド帯 -->
+    <div class="gold-bar-bottom"></div>
+  </div>
+
+  <script>
+    // 星のキラキラを生成
+    const starsContainer = document.getElementById('stars');
+    for (let i = 0; i < 60; i++) {
+      const star = document.createElement('div');
+      star.className = 'star';
+      const size = Math.random() * 3 + 1;
+      star.style.cssText = `
+        width: ${size}px;
+        height: ${size}px;
+        left: ${Math.random() * 100}%;
+        top: ${Math.random() * 100}%;
+        animation-delay: ${Math.random() * 2}s;
+        animation-duration: ${Math.random() * 2 + 1}s;
+        opacity: ${Math.random() * 0.7 + 0.3};
+      `;
+      starsContainer.appendChild(star);
+    }
+  </script>
+</body>
+</html>
